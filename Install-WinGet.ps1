@@ -20,13 +20,9 @@ Invoke-WebRequest -Uri https://aka.ms/Microsoft.VCLibs.x64.14.00.Desktop.appx -O
 
 # Workaround for Microsoft.UI.Xaml dependency.
 # Creates an additional dependency on Microsoft.Web.Webview2
-# Check if Nuget Package Provider is installed
-if(-not (Get-PackageProvider -Name NuGet -ErrorAction SilentlyContinue)) 
+# Detection logic was breaking the silent install. Just installing NuGet's package provider.
+Install-PackageProvider -Name NuGet -Force -Scope CurrentUser -Confirm:$false
 
-{
-# Install the Nuget Package Provider current user to be silent
-    Install-PackageProvider -Name NuGet -Force -Scope CurrentUser -MinimumVersion 2.8
-}
 
 # Check if Nuget Module is installed
 if(-not (Get-Module -ListAvailable -Name NuGet)) {
