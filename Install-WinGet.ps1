@@ -10,9 +10,11 @@ $VCDependency = "Microsoft.VCLibs.x64.14.00.Desktop.appx"
 # Begin recording all interactions to the log file
 Start-Transcript -Path "$LogPath\wingetinstall.log"
 
+# Configure download location for Winget
 $latestWingetMsixBundleUri = $(Invoke-RestMethod https://api.github.com/repos/microsoft/winget-cli/releases/latest).assets.browser_download_url | Where-Object {$_.EndsWith(".msixbundle")}
 $latestWingetMsixBundle = $latestWingetMsixBundleUri.Split("/")[-1]
 
+# Download Microsoft binaries.
 Write-Information "Downloading winget to current directory..."
 Invoke-WebRequest -Uri $latestWingetMsixBundleUri -OutFile "./$latestWingetMsixBundle"
 Invoke-WebRequest -Uri https://aka.ms/Microsoft.VCLibs.x64.14.00.Desktop.appx -OutFile Microsoft.VCLibs.x64.14.00.Desktop.appx
@@ -23,7 +25,7 @@ Invoke-WebRequest -Uri https://aka.ms/Microsoft.VCLibs.x64.14.00.Desktop.appx -O
 Write-Information "Install Nuget..."
 Install-PackageProvider -Name NuGet -Force -Scope CurrentUser -Confirm:$false
 
-
+# Install Winget PowerShell Module
 # Check if Nuget Module is installed
 Write-Information "Checking for Nuget Powershell Module..."
 if(-not (Get-Module -ListAvailable -Name NuGet)) {
@@ -33,6 +35,7 @@ if(-not (Get-Module -ListAvailable -Name NuGet)) {
 }
 Write-Information "Nuget Powershell Module found."
 
+# Configure Nuget.org repository
 # Check if Nuget.org repository is registered
 Write-Information "Check if Nuget.org repository is registered..."
 if(-not (Get-PackageSource | Where-Object { $_.Name -eq 'nuget.org' })) 
@@ -43,7 +46,7 @@ if(-not (Get-PackageSource | Where-Object { $_.Name -eq 'nuget.org' }))
 }
 Write-Information "Nuget.org repository found."
 
-# Installs Microsoft.UI.Xaml
+# Install Microsoft.UI.Xaml
 # Check if UI Xaml is installed
 Write-Information "Checking for Microsoft UI XAML..."
 if (-not (Get-Package -Name $UIXAMLDependency -RequiredVersion 2.7 -ErrorAction SilentlyContinue)) 
@@ -54,6 +57,7 @@ if (-not (Get-Package -Name $UIXAMLDependency -RequiredVersion 2.7 -ErrorAction 
 }
 Write-Information "Microsoft UI XAML found."
 
+# Install VC++ Libs
 # Check if VC++ Libs  is installed
 Write-Information "Checking for VC dependency..."
 if (-not (Get-AppxPackage -Name $VCDependency -ErrorAction SilentlyContinue)) 
@@ -63,6 +67,7 @@ if (-not (Get-AppxPackage -Name $VCDependency -ErrorAction SilentlyContinue))
 }
 Write-Information "VC dependency found."
 
+# Install winget
 # Check if winget is installed
 Write-Information "Checking for Winget..."
 $wingetPackageName = $latestWingetMsixBundle.Split(".")[0]
