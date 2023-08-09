@@ -62,6 +62,7 @@ Write-Information "Microsoft UI XAML found."
 Write-Information "Checking for VC dependency..."
 if (-not (Get-AppxPackage -Name $VCDependency -ErrorAction SilentlyContinue)) 
 {
+    # Install VC++
     Write-Information "Installing VC dependency..."
     Add-AppxPackage "./$VCDependency" -ErrorAction SilentlyContinue
 }
