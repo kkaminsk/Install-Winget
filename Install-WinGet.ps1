@@ -29,8 +29,8 @@ Install-PackageProvider -Name NuGet -Force -Scope CurrentUser -Confirm:$false
 # Check if Nuget Module is installed
 Write-Information "Checking for Nuget Powershell Module..."
 if(-not (Get-Module -ListAvailable -Name NuGet)) {
-    Write-Information "Nuget Powershell Module not found. Installing..."
     # Install the Nuget PowerShell Module
+    Write-Information "Nuget Powershell Module not found. Installing..."
     Install-Module -Name NuGet -Force
 }
 Write-Information "Nuget Powershell Module found."
