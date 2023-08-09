@@ -66,7 +66,7 @@ if (-not (Get-AppxPackage -Name $VCDependency -ErrorAction SilentlyContinue))
     Write-Information "Installing VC dependency..."
     Add-AppxPackage "./$VCDependency" -ErrorAction SilentlyContinue
 }
-Write-Information "VC dependency found."
+Write-Information "VC dependency installed."
 
 # Install winget
 # Check if winget is installed
