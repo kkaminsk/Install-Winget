@@ -34,8 +34,8 @@ if (-not (Get-PackageProvider -Name NuGet -ErrorAction SilentlyContinue)) {
     Install-PackageProvider -Name NuGet -Force -Scope CurrentUser -Confirm:$false
 } else {
     Write-Host "NuGet provider is already installed."
+    Write-Information "[$([datetime]::Now.ToString('yyyy-MM-dd HH:mm:ss'))] NuGet provider is already installed."
 }
-
 
 # Install Winget PowerShell Module
 # Check if Nuget Module is installed
