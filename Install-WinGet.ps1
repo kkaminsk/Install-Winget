@@ -84,8 +84,12 @@ if (-not (Get-AppxPackage -Name $VCDependency -ErrorAction SilentlyContinue))
     try {
         Add-AppxPackage "./$VCDependency" -ErrorAction Stop
     } catch {
-        Write-Information "[$([datetime]::Now.ToString('yyyy-MM-dd HH:mm:ss'))] Error installing VC dependency: $_"
-        $overallStatus = $false
+        if ($_.Exception.Message -like "*Error installing VC dependency: Deployment failed with HRESULT: 0x80073D06, The package could not be installed because a higher version of this package is already installed.*") {
+            Write-Information "[$([datetime]::Now.ToString('yyyy-MM-dd HH:mm:ss'))] A higher version of VC dependency is already installed. Continuing..."
+        } else {
+            Write-Information "[$([datetime]::Now.ToString('yyyy-MM-dd HH:mm:ss'))] Error installing VC dependency: $_"
+            $overallStatus = $false
+        }
     }
 }
 Write-Information "[$([datetime]::Now.ToString('yyyy-MM-dd HH:mm:ss'))] VC dependency installation completed."
