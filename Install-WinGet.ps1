@@ -1,16 +1,41 @@
+<#
+.SYNOPSIS
+    Installs the latest version of Winget and its dependencies.
+
+.DESCRIPTION
+    This script automates the installation of Winget (Windows Package Manager) and its required dependencies.
+    It handles downloading necessary files, installing dependencies, and managing potential errors during the process.
+
+.NOTES
+    File Name      : Install-WinGet.ps1
+    Prerequisite   : Windows PowerShell 5.1
+    Copyright 2023 : Kevin Kaminski
+
+.EXAMPLE
+    .\Install-WinGet.ps1
+#>
+
 # Do not use with PowerShell 7 or later, as this script is designed for Windows PowerShell 5.1.
 
+# Suppress progress bars for faster execution
 $progressPreference = 'silentlyContinue'
+
 # Set the log path to the environment variable for the root of the temp folder
 $LogPath = $env:TEMP
 
-# Initialize status variable
+# Initialize status variable to track overall success of the installation
 $overallStatus = $true
 
-# Set the XML Dependency
+# Set the dependencies
 $UIXAMLDependency = "Microsoft.UI.Xaml"
 $UIXAMLAPPXDependency = $env:ProgramFiles + "\PackageManagement\NuGet\Packages\Microsoft.UI.Xaml.2.7.0\tools\AppX\x64\Release\Microsoft.UI.Xaml.2.7.appx"
 $VCDependency = "Microsoft.VCLibs.x64.14.00.Desktop.appx"
+
+# Function to log messages with timestamps
+function Write-LogMessage {
+    param([string]$Message)
+    Write-Information "[$([datetime]::Now.ToString('yyyy-MM-dd HH:mm:ss'))] $Message"
+}
 
 # Begin recording all interactions to the log file
 Start-Transcript -Path "$LogPath\wingetinstall.log"
@@ -84,12 +109,11 @@ if (-not (Get-AppxPackage -Name $VCDependency -ErrorAction SilentlyContinue))
     try {
         Add-AppxPackage "./$VCDependency" -ErrorAction Stop
     } catch {
-        if ($_.Exception.Message -like "*Error installing VC dependency: Deployment failed with HRESULT: 0x80073D06*") {
+        if ($_.Exception.Message -like "*higher version*") {
             Write-Information "[$([datetime]::Now.ToString('yyyy-MM-dd HH:mm:ss'))] A higher version of VC dependency is already installed. Continuing..."
         } else {
-            Write-Information "[$([datetime]::Now.ToString('yyyy-MM-dd HH:mm:ss'))] Warning: Error installing VC dependency: $_"
-            # This is an acceptable failure
-            $overallStatus = $true
+            Write-Information "[$([datetime]::Now.ToString('yyyy-MM-dd HH:mm:ss'))] Error installing VC dependency: $_"
+            $overallStatus = $false
         }
     }
 }
@@ -105,14 +129,18 @@ if (-not (Get-AppxPackage -Name $wingetPackageName -ErrorAction SilentlyContinue
     try {
         Add-AppxPackage "./$latestWingetMsixBundle" -ErrorAction Stop
     } catch {
-        Write-Information "[$([datetime]::Now.ToString('yyyy-MM-dd HH:mm:ss'))] Error installing Winget: $_"
-        $overallStatus = $false
+        if ($_.Exception.Message -like "*0x80073D02*" -and $_.Exception.Message -like "*error 0x80073D02: Unable to install because the following apps need to be closed Microsoft.DesktopAppInstaller*") {
+            Write-Information "[$([datetime]::Now.ToString('yyyy-MM-dd HH:mm:ss'))] Microsoft.DesktopAppInstaller needs to be closed. This is not considered an error. Continuing..."
+        } else {
+            Write-Information "[$([datetime]::Now.ToString('yyyy-MM-dd HH:mm:ss'))] Error installing Winget: $_"
+            $overallStatus = $false
+        }
     }
 }
 Write-Information "[$([datetime]::Now.ToString('yyyy-MM-dd HH:mm:ss'))] Winget installation completed."
 
 # Output final status
-if ($overallStatus -eq $true) {
+if ($overallStatus) {
     Write-Host "Success!"
 } else {
     Write-Host "Failed!"
