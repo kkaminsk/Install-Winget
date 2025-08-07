@@ -84,7 +84,7 @@ if (-not (Get-AppxPackage -Name $VCDependency -ErrorAction SilentlyContinue))
     try {
         Add-AppxPackage "./$VCDependency" -ErrorAction Stop
     } catch {
-        if ($_.Exception.Message -like "*Error installing VC dependency: Deployment failed with HRESULT: 0x80073D06, The package could not be installed because a higher version of this package is already installed.*") {
+        if ($_.Exception.Message -like "*Error installing VC dependency: Deployment failed with HRESULT: 0x80073D06*") {
             Write-Information "[$([datetime]::Now.ToString('yyyy-MM-dd HH:mm:ss'))] A higher version of VC dependency is already installed. Continuing..."
         } else {
             Write-Information "[$([datetime]::Now.ToString('yyyy-MM-dd HH:mm:ss'))] Warning: Error installing VC dependency: $_"
@@ -112,7 +112,7 @@ if (-not (Get-AppxPackage -Name $wingetPackageName -ErrorAction SilentlyContinue
 Write-Information "[$([datetime]::Now.ToString('yyyy-MM-dd HH:mm:ss'))] Winget installation completed."
 
 # Output final status
-if ($overallStatus) {
+if ($overallStatus -eq $true) {
     Write-Host "Success!"
 } else {
     Write-Host "Failed!"
